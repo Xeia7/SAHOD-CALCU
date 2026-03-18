@@ -4,16 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salary Calculator</title>
+    <link rel="icon" type="image/png" href="logo.jpg">
+    
     <style>
         :root {
             --primary: #6366f1;
             --bg: #f8fafc;
             --card: #ffffff;
             --text: #1e293b;
+            --border: #e2e8f0;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             display: flex;
@@ -21,75 +24,123 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
 
         .container {
             background: var(--card);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
         }
 
-        h2 { text-align: center; color: var(--primary); margin-bottom: 1.5rem; }
+        /* Logo Styling */
+        .site-logo {
+            display: block;
+            margin: 0 auto 1.2rem auto;
+            max-width: 90px;
+            height: auto;
+            border-radius: 15px;
+            object-fit: contain;
+        }
 
-        .input-group { margin-bottom: 1rem; }
+        h2 { 
+            text-align: center; 
+            color: var(--primary); 
+            margin-bottom: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
 
-        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; opacity: 0.8; }
+        .input-group { margin-bottom: 1.2rem; }
+
+        label { 
+            display: block; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            margin-bottom: 0.5rem; 
+            color: #64748b;
+        }
 
         input {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
             box-sizing: border-box;
-            transition: border-color 0.3s;
+            transition: all 0.2s;
             font-size: 1rem;
+            color: var(--text);
         }
 
-        input:focus { outline: none; border-color: var(--primary); }
+        input:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
 
         .result-box {
             background: #f1f5f9;
             padding: 1.5rem;
-            border-radius: 12px;
+            border-radius: 16px;
             margin-top: 2rem;
             text-align: center;
+            border: 1px solid var(--border);
         }
 
-        .total-label { font-size: 0.9rem; margin-bottom: 0.5rem; }
-        .total-amount { font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .total-label { 
+            font-size: 0.85rem; 
+            font-weight: 600;
+            margin-bottom: 0.5rem; 
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+        
+        .total-amount { 
+            font-size: 2.25rem; 
+            font-weight: 800; 
+            color: var(--primary); 
+        }
+
+        /* Responsive adjustment */
+        @media (max-width: 480px) {
+            .container { padding: 1.5rem; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <img src="logo.png" alt="App Logo" class="site-logo">
+    
     <h2>Paycheck Calcu</h2>
     
     <div class="input-group">
         <label>Regular OT (Hours)</label>
-        <input type="number" id="regOT" value="0" oninput="calculate()">
+        <input type="number" id="regOT" value="0" min="0" oninput="calculate()">
     </div>
 
     <div class="input-group">
         <label>Saturdays Worked (Rest Day)</label>
-        <input type="number" id="satOT" value="0" oninput="calculate()">
+        <input type="number" id="satOT" value="0" min="0" oninput="calculate()">
     </div>
 
     <div class="input-group">
         <label>Sundays Worked (Rest Day)</label>
-        <input type="number" id="sunOT" value="0" oninput="calculate()">
+        <input type="number" id="sunOT" value="0" min="0" oninput="calculate()">
     </div>
 
     <div class="input-group">
         <label>Absents (Days - use 0.5 for half day)</label>
-        <input type="number" id="absents" value="0" step="0.5" oninput="calculate()">
+        <input type="number" id="absents" value="0" step="0.5" min="0" oninput="calculate()">
     </div>
 
     <div class="input-group">
         <label>Added Allowance</label>
-        <input type="number" id="allowance" value="0" oninput="calculate()">
+        <input type="number" id="allowance" value="0" min="0" oninput="calculate()">
     </div>
 
     <div class="result-box">
@@ -100,30 +151,38 @@
 
 <script>
     function calculate() {
+        // Constants
         const basic = 5981.25;
         const regRate = 85.9375;
         const satRate = 715;
         const sunRate = 915;
-        const absentDeduction = 550;
+        const fullDayDeduction = 550;
+        const halfDayDeduction = 225;
 
+        // Inputs
         const regOT = parseFloat(document.getElementById('regOT').value) || 0;
         const satDays = parseFloat(document.getElementById('satOT').value) || 0;
         const sunDays = parseFloat(document.getElementById('sunOT').value) || 0;
         const absents = parseFloat(document.getElementById('absents').value) || 0;
         const allowance = parseFloat(document.getElementById('allowance').value) || 0;
 
-        // Note: 0.5 day absent = 225 according to your rule (slightly different from 550/2)
-        let totalDeduction = 0;
-        if (absents === 0.5) {
-            totalDeduction = 225;
-        } else {
-            totalDeduction = absents * absentDeduction;
-        }
+        // Logic for deductions: Handles cases like 0.5, 1.0, 1.5, etc.
+        const fullDays = Math.floor(absents);
+        const hasHalfDay = (absents % 1 !== 0);
+        const totalDeduction = (fullDays * fullDayDeduction) + (hasHalfDay ? halfDayDeduction : 0);
 
+        // Final Calculation
         const earnings = (basic - totalDeduction) + (regOT * regRate) + (satDays * satRate) + (sunDays * sunRate) + allowance;
 
-        document.getElementById('totalDisplay').innerText = "₱ " + earnings.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        // Display with Peso Formatting
+        document.getElementById('totalDisplay').innerText = "₱ " + earnings.toLocaleString('en-PH', {
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 2
+        });
     }
+
+    // Run once on load to show initial state
+    window.onload = calculate;
 </script>
 
 </body>
