@@ -34,22 +34,33 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             width: 100%;
             max-width: 420px;
+            position: relative;
         }
 
-        /* Logo Styling */
-        .site-logo {
-            display: block;
-            margin: 0 auto 1.2rem auto;
-            max-width: 90px;
-            height: auto;
-            border-radius: 15px;
-            object-fit: contain;
+        /* Music Button Styling */
+        #musicBtn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
         }
+
+        #musicBtn:active { transform: scale(0.9); }
 
         h2 { 
             text-align: center; 
             color: var(--primary); 
-            margin-bottom: 2rem;
+            margin: 0.5rem 0 2rem 0;
             font-weight: 800;
             letter-spacing: -0.025em;
         }
@@ -105,7 +116,6 @@
             color: var(--primary); 
         }
 
-        /* Responsive adjustment */
         @media (max-width: 480px) {
             .container { padding: 1.5rem; }
         }
@@ -113,8 +123,12 @@
 </head>
 <body>
 
+<audio id="bgMusic" loop>
+    <source src="music.mp3" type="audio/mpeg">
+</audio>
+
 <div class="container">
-    <img src="logo.jpg" alt="App Logo" class="site-logo">
+    <button id="musicBtn" onclick="toggleMusic()">🔇</button>
     
     <h2>Paycheck Calcu</h2>
     
@@ -134,7 +148,7 @@
     </div>
 
     <div class="input-group">
-        <label>Absents (Days - use 0.5 for half day)</label>
+        <label>Absents (Days - 0.5 for half day)</label>
         <input type="number" id="absents" value="0" step="0.5" min="0" oninput="calculate()">
     </div>
 
@@ -150,8 +164,21 @@
 </div>
 
 <script>
+    const music = document.getElementById('bgMusic');
+    const musicBtn = document.getElementById('musicBtn');
+
+    function toggleMusic() {
+        if (music.paused) {
+            music.play();
+            music.volume = 0.4; // Set to 40% volume so it's not too loud
+            musicBtn.innerText = "🔊";
+        } else {
+            music.pause();
+            musicBtn.innerText = "🔇";
+        }
+    }
+
     function calculate() {
-        // Constants
         const basic = 5981.25;
         const regRate = 85.9375;
         const satRate = 715;
@@ -159,29 +186,24 @@
         const fullDayDeduction = 550;
         const halfDayDeduction = 225;
 
-        // Inputs
         const regOT = parseFloat(document.getElementById('regOT').value) || 0;
         const satDays = parseFloat(document.getElementById('satOT').value) || 0;
         const sunDays = parseFloat(document.getElementById('sunOT').value) || 0;
         const absents = parseFloat(document.getElementById('absents').value) || 0;
         const allowance = parseFloat(document.getElementById('allowance').value) || 0;
 
-        // Logic for deductions: Handles cases like 0.5, 1.0, 1.5, etc.
         const fullDays = Math.floor(absents);
         const hasHalfDay = (absents % 1 !== 0);
         const totalDeduction = (fullDays * fullDayDeduction) + (hasHalfDay ? halfDayDeduction : 0);
 
-        // Final Calculation
         const earnings = (basic - totalDeduction) + (regOT * regRate) + (satDays * satRate) + (sunDays * sunRate) + allowance;
 
-        // Display with Peso Formatting
         document.getElementById('totalDisplay').innerText = "₱ " + earnings.toLocaleString('en-PH', {
             minimumFractionDigits: 2, 
             maximumFractionDigits: 2
         });
     }
 
-    // Run once on load to show initial state
     window.onload = calculate;
 </script>
 
